@@ -51,6 +51,7 @@ write_files:
 runcmd:
   - [ ansible-galaxy, install, systemli.letsencrypt ]
   - [ ansible-galaxy, install, systemli.jitsi_meet ]
+  - [ ansible, -i /root/ansible_hosts, /root/jitsi-server.yml ]
   - [ ufw, allow, ssh ]
   - [ ufw, allow, http ]
   - [ ufw, allow, https ]
@@ -59,7 +60,7 @@ runcmd:
 EOF
 }
 
-resource "hetznerdns_record" "jitsi1" {
+resource "hetznerdns_record" "jitsi_server" {
     zone_id = data.hetznerdns_zone.dns_zone.id
     name = var.jitsi_sub_domain
     value = hcloud_server.jitsi_server.ipv4_address
