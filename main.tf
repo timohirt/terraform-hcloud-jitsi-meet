@@ -12,6 +12,11 @@ data "hcloud_ssh_key" "root_ssh_key" {
   fingerprint = var.root_ssh_key_fingerprint
 }
 
+resource "random_password" "password" {
+  length = 42
+  special = true
+}
+
 resource "hcloud_server" "jitsi_server" {
   name = "${var.jitsi_sub_domain}.${var.domain_name}"
   location = "nbg1"
@@ -36,6 +41,7 @@ write_files:
           jitsi_meet_ssl_cert_path: "/etc/letsencrypt/live/{{ jitsi_meet_server_name }}/fullchain.pem"
           jitsi_meet_ssl_key_path: "/etc/letsencrypt/live/{{ jitsi_meet_server_name }}/privkey.pem"
           jitsi_meet_config_default_language: ${var.jitsi_default_language}
+          jitsi_meet_base_secret: "${random_password.password.result}"
           letsencrypt_account_email: ${var.letsencrypt_account_email}
           letsencrypt_cert:
             name: "{{ jitsi_meet_server_name }}"
@@ -51,7 +57,7 @@ write_files:
 runcmd:
   - [ ansible-galaxy, install, systemli.letsencrypt ]
   - [ ansible-galaxy, install, systemli.jitsi_meet ]
-  - [ ansible, -i /root/ansible_hosts, /root/jitsi-server.yml ]
+  - [ ansible-playbook, -i /root/ansible_hosts, /root/jitsi-server.yml ]
   - [ ufw, allow, ssh ]
   - [ ufw, allow, http ]
   - [ ufw, allow, https ]
