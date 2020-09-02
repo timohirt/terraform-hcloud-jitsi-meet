@@ -16,8 +16,20 @@ variable "server_type" {
   description = "The server type determines CPU and RAM of the server to use."
 }
 
+#
+# The location controls where the server is created. You can find the
+# latest list using the API (https://docs.hetzner.cloud/#locations-get-all-locations).
+#
+variable "location" {
+  type = string
+  default = "nbg1"
+  description = "The location name where the server is created (`nbg1`, `fsn1` or `hel1`)"
+}
+
+#
 # You can lookup the fingerprint (eg. "74:3a:..:bf:fb:6b:49:03") in Hetzner Cloud Console
 # or get it from a data source or a resouce in your Terraform project.
+#
 variable "root_ssh_key_fingerprint" {
   type = string
   description = "Fingerprint of the ssh key at Hetzner Cloud which for root access."

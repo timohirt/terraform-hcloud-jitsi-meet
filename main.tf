@@ -12,6 +12,11 @@ terraform {
   required_version = ">= 0.13"
 }
 
+
+locals {
+  fqdn = "${var.jitsi_sub_domain}.${var.domain_name}"
+}
+
 data "hcloud_ssh_key" "root_ssh_key" {
   fingerprint = var.root_ssh_key_fingerprint
 }
@@ -22,8 +27,8 @@ resource "random_password" "password" {
 }
 
 resource "hcloud_server" "jitsi_server" {
-  name        = "${var.jitsi_sub_domain}.${var.domain_name}"
-  location    = "nbg1"
+  name        = local.fqdn
+  location    = var.location
   image       = "ubuntu-20.04"
   server_type = var.server_type
   ssh_keys = [
@@ -36,12 +41,12 @@ packages:
   - certbot
 write_files:
   - content: |
-      - hosts: jitsi-servers
+      - hosts: ${var.jitsi_sub_domain}
         roles:
           - { role: systemli.letsencrypt }
           - { role: systemli.jitsi_meet }
         vars:
-          jitsi_meet_server_name: "${var.jitsi_sub_domain}.${var.domain_name}"
+          jitsi_meet_server_name: "${local.fqdn}"
           jitsi_meet_ssl_cert_path: "/etc/letsencrypt/live/{{ jitsi_meet_server_name }}/fullchain.pem"
           jitsi_meet_ssl_key_path: "/etc/letsencrypt/live/{{ jitsi_meet_server_name }}/privkey.pem"
           jitsi_meet_config_default_language: ${var.jitsi_default_language}
@@ -55,8 +60,8 @@ write_files:
             http_auth: standalone
     path: /root/jitsi-server.yml
   - content: |
-      [jitsi-servers]
-      ${var.jitsi_sub_domain}.${var.domain_name} ansible_connection=local
+      [${var.jitsi_sub_domain}]
+      ${local.fqdn} ansible_connection=local
     path: /root/ansible_hosts
 runcmd:
   - [ ansible-galaxy, install, systemli.letsencrypt ]
