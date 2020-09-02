@@ -1,11 +1,5 @@
 terraform {
-  required_providers {
-    hcloud = ">= 1.16"
-  }
-}
-
-data "hetznerdns_zone" "dns_zone" {
-    name = var.domain_name
+  required_version = ">= 0.13"
 }
 
 data "hcloud_ssh_key" "root_ssh_key" {
@@ -13,19 +7,19 @@ data "hcloud_ssh_key" "root_ssh_key" {
 }
 
 resource "random_password" "password" {
-  length = 42
+  length  = 42
   special = true
 }
 
 resource "hcloud_server" "jitsi_server" {
-  name = "${var.jitsi_sub_domain}.${var.domain_name}"
-  location = "nbg1"
-  image = "ubuntu-20.04"
+  name        = "${var.jitsi_sub_domain}.${var.domain_name}"
+  location    = "nbg1"
+  image       = "ubuntu-20.04"
   server_type = var.server_type
   ssh_keys = [
     data.hcloud_ssh_key.root_ssh_key.id
   ]
-  user_data =<<EOF
+  user_data = <<EOF
 #cloud-config
 packages:
   - ansible
@@ -64,13 +58,5 @@ runcmd:
   - [ ufw, allow, in, 10000:20000/udp ]
   - [ ufw, enable ]
 EOF
-}
-
-resource "hetznerdns_record" "jitsi_server" {
-    zone_id = data.hetznerdns_zone.dns_zone.id
-    name = var.jitsi_sub_domain
-    value = hcloud_server.jitsi_server.ipv4_address
-    type = "A"
-    ttl= 60
 }
 
