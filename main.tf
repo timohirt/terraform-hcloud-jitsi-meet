@@ -59,14 +59,10 @@ write_files:
             challenge: http
             http_auth: standalone
     path: /root/jitsi-server.yml
-  - content: |
-      [${var.jitsi_sub_domain}]
-      ${local.fqdn} ansible_connection=local
-    path: /root/ansible_hosts
 runcmd:
   - [ ansible-galaxy, install, systemli.letsencrypt ]
   - [ ansible-galaxy, install, systemli.jitsi_meet ]
-  - [ ansible-playbook, -i /root/ansible_hosts, /root/jitsi-server.yml ]
+  - ansible-playbook --connection=local --inventory ${var.jitsi_sub_domain}, /root/jitsi-server.yml
   - [ ufw, allow, ssh ]
   - [ ufw, allow, http ]
   - [ ufw, allow, https ]
