@@ -29,7 +29,7 @@ resource "random_password" "password" {
 resource "hcloud_server" "jitsi_server" {
   name        = local.fqdn
   location    = var.location
-  image       = "ubuntu-20.04"
+  image       = "ubuntu-18.04"
   server_type = var.server_type
   ssh_keys = [
     data.hcloud_ssh_key.root_ssh_key.id
